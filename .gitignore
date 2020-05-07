@@ -1,5 +1,5 @@
 .vscode
 main
 main.dSYM
-cz
 archive/
+node_modules
