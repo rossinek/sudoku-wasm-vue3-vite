@@ -1,5 +1,5 @@
 <template>
-  <div class="sudoku-board">
+  <div :class="['sudoku-board', size > 3 && 'sudoku-board--dense']">
     <div class="grid grid--big" :style="gridStyle">
       <a-square v-for="i in size * size" :key="i">
         <div class="grid grid--small" :style="gridStyle">
@@ -38,11 +38,11 @@ export default defineComponent({
   props: {
     size: {
       type: Number,
-      default: 3 // current sudoku core support only 3 but web is ready for more
+      default: 3,
     },
     level: {
       type: Number,
-      default: 10
+      default: 5,
     }
   },
   setup(props, context) {
@@ -62,7 +62,6 @@ export default defineComponent({
     })
 
     return {
-      size: props.size,
       gridStyle,
       boardValidation,
       CellContextProvider,
@@ -77,13 +76,23 @@ export default defineComponent({
   --column-gap: 5px;
   --cell-font-size: 20px;
 }
+.sudoku-board--dense {
+  --grid-padding: 5px;
+  --column-gap: 2px;
+  --cell-font-size: 15px;
+}
 @media (max-width: 480px), (max-height: 480px) {
   .sudoku-board {
     --grid-padding: 5px;
     --column-gap: 2px;
     --cell-font-size: 15px;
   }
+  .sudoku-board--dense {
+    --grid-padding: 3px;
+    --cell-font-size: 13px;
+  }
 }
+
 .sudoku-board {
   width: 100%;
   max-width: 70vh;

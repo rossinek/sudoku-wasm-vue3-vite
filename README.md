@@ -44,8 +44,8 @@ yarn build
 
 I remembered that a few years ago I did a sudoku generator as a student project.
 It was a time when I started my programming adventure and that was the first "big project" I made.
-Apart from the sentimental aspect I like this project also because it is quite good when it comes to performance.
-One of the tricks that made the code work super fast is the use of very fast bit operations. I described it a little "bit" (🤓) below.
+Apart from the sentimental aspect I like this project also because it is quite good when it comes to performance (even though the algorithm is quite naive).
+One of the tricks that made the code work super fast is the use of very cheap bit operations. I described it a little "bit" (🤓) below.
 
 ## About C code and a performance trick
 

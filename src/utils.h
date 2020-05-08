@@ -4,7 +4,7 @@
 void resetBits(int *num, int value);
 int getBitValue(int num, unsigned int pos);
 void setBitValue(int *num, unsigned int pos, int value);
-int countBits(int num);
+int countBits(int num, int n);
 int getFirstBitPosition(int num);
 
 #endif

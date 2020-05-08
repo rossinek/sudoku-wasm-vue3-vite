@@ -35,6 +35,8 @@ export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
     return boardRow * size.value * size.value + boardColumn
   }
 
+  // works fine only for size*size < 100 :wink:
+  const allowedPrefixes = new Array(Math.floor(size.value * size.value * 0.1)).fill('').map((_, i) => `${i + 1}`)
   const isCellValid = (v: string) => v === '' || (+v > 0 && +v <= size.value * size.value)
   const isCellReadonly = (index: number) => !!boardData[index]
   const moveLeft = (index: number) => index % (size.value * size.value) > 0 ? index - 1 : index
@@ -77,7 +79,9 @@ export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
       } else {
         target.value = model[index]
       }
-      target.select()
+      if (!allowedPrefixes.includes(target.value)) {
+        target.select()
+      }
     },
     focus: (ev: InputEvent) => (ev.target as HTMLInputElement).select(),
     click: (ev: InputEvent) => (ev.target as HTMLInputElement).select(),

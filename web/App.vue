@@ -1,11 +1,16 @@
 <template>
-  <a-container>
+  <a-container class="a-container">
     <h1 class="title">WASM Sudoku Generator</h1>
 
     <template v-if="route === ''">
       <div class="option">
         <h2 class="option__label">Difficulty</h2>
-        <a-slider v-model="level" min="0" max="20" />
+        <a-slider v-model="level" min="0" max="10" />
+      </div>
+
+      <div class="option">
+        <h2 class="option__label">Size</h2>
+        <a-slider v-model="size" min="2" max="4" :label="v => `${v*v} × ${v*v}`" />
       </div>
 
       <div class="button-wrapper">
@@ -15,12 +20,12 @@
 
     <template v-if="route === 'game' && coreReady">
       <div class="board-wrapper">
-        <sudoku-board :level="level" @solved="onSolved" />
+        <sudoku-board :size="+size" :level="+level" @solved="onSolved" />
         <div class="hint">Tip: You can use keyboard for navigation.</div>
         <h2 :class="['win-info', !isGameSolved && 'win-info--hidden']">You win! 🎉</h2>
       </div>
       <div class="button-wrapper">
-        <a-button @click="restart">restart</a-button>
+        <a-button @click="restart">new game</a-button>
       </div>
     </template>
   </a-container>
@@ -44,7 +49,8 @@ export default defineComponent({
   },
   setup () {
     const { route, routerPush } = useLocalRouter(['', 'game'])
-    const level = ref(10)
+    const level = ref(5)
+    const size = ref(3)
     const coreReady = ref(false)
     ensureCoreReady().then(() => { coreReady.value = true })
     const isGameSolved = ref(false)
@@ -55,6 +61,7 @@ export default defineComponent({
     }
 
     return {
+      size,
       level,
       coreReady,
       isGameSolved,
@@ -68,6 +75,9 @@ export default defineComponent({
 </script>
 
 <style scoped>
+.a-container {
+  overflow: hidden;
+}
 .title {
   margin-bottom: 40px;
 }
@@ -75,6 +85,7 @@ export default defineComponent({
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  padding: 40px 40px;
 }
 .option__label {
   margin: 0 40px 0 0;

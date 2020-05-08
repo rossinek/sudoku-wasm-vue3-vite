@@ -4,7 +4,7 @@
       class="a-slider__label"
       :style="labelStyle"
     >
-      {{ internalModel }}
+      {{ label ? label(internalModel): internalModel }}
     </span>
     <input
       class="a-slider__input"
@@ -22,6 +22,11 @@ import { defineComponent, ref, watch, computed } from 'vue'
 
 export default defineComponent({
   inheritAttrs: false,
+  props: {
+    label: {
+      type: Function,
+    }
+  },
   setup (props, context) {
     const internalModel = ref((context.attrs.modelValue as number) || 0)
     const labelStyle = computed(() => {

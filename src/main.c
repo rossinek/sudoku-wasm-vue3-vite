@@ -14,13 +14,14 @@ int main(int argc, const char *argv[]) {
 
   sudoku_game *sudoku;
   char input[20];
+  int size = 3;
   int level, gameCreated = 0, ok;
 
   while (1) {
     printf("Available commands: (g) generate, (q) quit.\n");
     scanf("%s", input);
     if (strcmp(input, "q") == 0 || strcmp(input, "quit") == 0) {
-      if (gameCreated) free(sudoku);
+      if (gameCreated) cleanup(sudoku, size);
       printf("\nBye!\n");
       return 0;
     }
@@ -30,10 +31,12 @@ int main(int argc, const char *argv[]) {
       if (ok == 0 || level < 0 || level > 20) {
         printf("No such level\n\n");
       } else {
-        if (gameCreated) free(sudoku);
-        sudoku = createSolvedGame();
-        resetSafeRandomCells(sudoku, 30 + level);
-        printBoard(sudoku);
+        if (gameCreated) cleanup(sudoku, size);
+        sudoku = createSolvedGame(size);
+        while (resetSafeRandomCellsWithReverts(sudoku, size, 0, 30 + level, 10) == 0) {
+          // Do or do not. There is no try.
+        }
+        printBoard(sudoku, size);
         printf("Done!\n\n");
         gameCreated = 1;
       }

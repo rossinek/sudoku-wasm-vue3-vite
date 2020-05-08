@@ -22,9 +22,9 @@ void setBitValue(int *num, unsigned int pos, int value) {
   }
 }
 
-int countBits(int num) {
+int countBits(int num, int n) {
   int i, c = 0;
-  for (i = 8; i >= 0; i--) {
+  for (i = n - 1; i >= 0; i--) {
     if (getBitValue(num, i)) {
       c++;
     }

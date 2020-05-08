@@ -4,88 +4,110 @@
 #include "sudoku.h"
 #include "utils.h"
 
-sudoku_game *createGame() {
+sudoku_game *createGame(int size) {
   sudoku_game *sudoku = (sudoku_game *)malloc(sizeof(sudoku_game));
-  for (int i = 0; i < 9; i++) {
+  int board_size = size * size;
+  sudoku->lookup.rows = (int *)malloc(sizeof(int) * board_size);
+  sudoku->lookup.columns = (int *)malloc(sizeof(int) * board_size);
+  sudoku->lookup.squares = (int *)malloc(sizeof(int) * board_size);
+  for (int i = 0; i < board_size; i++) {
     resetBits(&sudoku->lookup.rows[i], 1);
     resetBits(&sudoku->lookup.columns[i], 1);
     resetBits(&sudoku->lookup.squares[i], 1);
   }
-  for (int i = 0; i < 9; i++) {
-    for (int j = 0; j < 9; j++) {
+  sudoku->board = (sudoku_cell **)malloc(sizeof(sudoku_cell *) * board_size);
+  for (int i = 0; i < board_size; i++) {
+    sudoku->board[i] = (sudoku_cell *)malloc(sizeof(sudoku_cell) * board_size);
+    for (int j = 0; j < board_size; j++) {
       sudoku->board[i][j].value = 0;
       sudoku->board[i][j].row = &sudoku->lookup.rows[i];
       sudoku->board[i][j].column = &sudoku->lookup.columns[j];
-      sudoku->board[i][j].square = &sudoku->lookup.squares[(i / 3) * 3 + (j / 3)];
+      sudoku->board[i][j].square = &sudoku->lookup.squares[(i / size) * size + (j / size)];
     }
   }
   return sudoku;
 }
 
-sudoku_game *createSolvedGame() {
-  sudoku_game *sudoku = createGame();
-  assignRandomFirstRow(sudoku);
-  for (int y = 1; y < 9; y++) {
-    if (y > 4 && countSolutions(sudoku, (9 - y) * 9) == none) {
-      free(sudoku);
-      return createSolvedGame();
+void cleanup(sudoku_game *sudoku, int size) {
+  int board_size = size * size;
+  for (int i = 0; i < board_size; i++) {
+    free(sudoku->board[i]);
+  }
+  free(sudoku->board);
+  free(sudoku->lookup.rows);
+  free(sudoku->lookup.columns);
+  free(sudoku->lookup.squares);
+  free(sudoku);
+}
+
+sudoku_game *createSolvedGame(int size) {
+  sudoku_game *sudoku = createGame(size);
+  int board_size = size * size;
+  assignRandomFirstRow(sudoku, size);
+  for (int y = 1; y < board_size; y++) {
+    int success = assignRandomAllowedRowWithReverts(sudoku, size, y, 200);
+    if (success == 0) {
+      cleanup(sudoku, size);
+      return createSolvedGame(size);
     }
-    assignRandomAllowedRow(sudoku, y);
   }
   return sudoku;
 }
 
-int isBoardComplete(uint8_t board[9 * 9]) {
-  for (int i = 0; i < 9 * 9; i++) {
+int isBoardComplete(uint8_t *board, int size) {
+  int n = size * size * size * size;
+  for (int i = 0; i < n; i++) {
     if (board[i] == 0) return 0;
   }
   return 1;
 }
 
-int isBoardValid(uint8_t board[9 * 9]) {
-  sudoku_game *sudoku = createGame();
-  for (int y = 0; y < 9; y++) {
-    for (int x = 0; x < 9; x++) {
-      int index = y * 9 + x;
+int isBoardValid(uint8_t *board, int size) {
+  int board_size = size * size;
+  sudoku_game *sudoku = createGame(size);
+  for (int y = 0; y < board_size; y++) {
+    for (int x = 0; x < board_size; x++) {
+      int index = y * board_size + x;
       if (board[index]) {
-        if (board[index] <= 0 && board[index] > 9) {
-          free(sudoku);
+        if (board[index] <= 0 && board[index] > board_size) {
+          cleanup(sudoku, size);
           return 0;
         }
-        int cell_allowed = allowedCellValues(sudoku, y, x);
+        int cell_allowed = allowedCellValues(sudoku, size, y, x);
         if (getBitValue(cell_allowed, board[index] - 1)) {
-          assignCell(sudoku, board[index], y, x);
+          assignCell(sudoku, size, board[index], y, x);
         } else {
-          free(sudoku);
+          cleanup(sudoku, size);
           return 0;
         }
       }
     }
   }
-  free(sudoku);
+  cleanup(sudoku, size);
   return 1;
 }
 
-int allowedCellValues(sudoku_game *sudoku, int y, int x) {
+int allowedCellValues(sudoku_game *sudoku, int size, int y, int x) {
   return (*sudoku->board[y][x].row) & (*sudoku->board[y][x].column) & (*sudoku->board[y][x].square);
 }
 
-void assignRandomFirstRow(sudoku_game *sudoku) {
-  int array[9];
-  for (int i = 0; i < 9; i++) {
+void assignRandomFirstRow(sudoku_game *sudoku, int size) {
+  int board_size = size * size;
+  int array[board_size];
+  for (int i = 0; i < board_size; i++) {
     array[i] = i + 1;
   }
 
-  shuffle(array, 9);
+  shuffle(array, board_size);
 
-  for (int i = 0; i < 9; i++) {
-    assignCell(sudoku, array[i], 0, i);
+  for (int i = 0; i < board_size; i++) {
+    assignCell(sudoku, size, array[i], 0, i);
   }
 }
 
 void shuffle(int array[], int n) {
-  int j, temp;
-  for (int i = 0; i < 5; i++) {
+  int j, temp, repeat = n / 2 + 1;
+  for (int i = 0; i < repeat; i++) {
     j = rand() % n;
     temp = array[i];
     array[i] = array[j];
@@ -93,33 +115,37 @@ void shuffle(int array[], int n) {
   }
 }
 
-void assignRandomAllowedRow(sudoku_game *sudoku, int y) {
-  int i, it, j, x;
-  for (it = 0; it < 9; it++) {
-    if (leastPossibleValues(sudoku, y, &x) == 0) {
-      resetRow(sudoku, y);
-      assignRandomAllowedRow(sudoku, y);
-      return;
-    }
-    j = rand() % 9;
-
-    int cell_allowed = allowedCellValues(sudoku, y, x);
-
-    i = j;
-    while (getBitValue(cell_allowed, i) != 1) {
-      i = (i + 1) % 9;
-    }
-    assignCell(sudoku, i + 1, y, x);
+// returns 0 if failed, 1 otherwise
+int assignRandomAllowedRowWithReverts(sudoku_game *sudoku, int size, int y, int tries) {
+  if (tries == 0) {
+    return 0;
   }
+  int board_size = size * size;
+  int i, it, x;
+  for (it = 0; it < board_size; it++) {
+    if (leastPossibleValues(sudoku, size, y, &x) == 0) {
+      resetRow(sudoku, size, y);
+      return assignRandomAllowedRowWithReverts(sudoku, size, y, tries - 1);
+    }
+
+    int cell_allowed = allowedCellValues(sudoku, size, y, x);
+
+    i = rand() % board_size;
+    while (getBitValue(cell_allowed, i) != 1) {
+      i = (i + 1) % board_size;
+    }
+    assignCell(sudoku, size, i + 1, y, x);
+  }
+  return 1;
 }
 
-int leastPossibleValues(sudoku_game *sudoku, int y, int *x) {
-  int i, counter, min = 10, hasFillableCell = 0;
+int leastPossibleValues(sudoku_game *sudoku, int size, int y, int *x) {
+  int board_size = size * size;
+  int i, counter, min = board_size + 1, hasFillableCell = 0;
 
-  for (i = 0; i < 9; i++) {
+  for (i = 0; i < board_size; i++) {
     if (sudoku->board[y][i].value == 0) {
-      counter = countBits((*sudoku->board[y][i].row) & (*sudoku->board[y][i].column) &
-                          (*sudoku->board[y][i].square));
+      counter = countBits(allowedCellValues(sudoku, size, y, i), board_size);
       if (counter == 0) {
         return 0;
       }
@@ -135,7 +161,7 @@ int leastPossibleValues(sudoku_game *sudoku, int y, int *x) {
   return hasFillableCell;
 }
 
-void assignCell(sudoku_game *sudoku, int value, int y, int x) {
+void assignCell(sudoku_game *sudoku, int size, int value, int y, int x) {
   if (value == 0) return;
   sudoku->board[y][x].value = value;
   setBitValue(sudoku->board[y][x].row, value - 1, 0);
@@ -143,58 +169,55 @@ void assignCell(sudoku_game *sudoku, int value, int y, int x) {
   setBitValue(sudoku->board[y][x].square, value - 1, 0);
 }
 
-void resetSafeRandomCells(sudoku_game *sudoku, int n) {
-  int i = 0, y, x, temp[4] = {0, 0, 0, 0};
-
-  while (i < n) {
+// returns 0 if failed, 1 otherwise
+int resetSafeRandomCellsWithReverts(sudoku_game *sudoku, int size, int nempty, int n, int tries) {
+  if (n == 0) {
+    return 1;
+  }
+  int board_size = size * size;
+  int count, used, y[4], x[4], temp[4] = {0, 0, 0, 0};
+  for (int t = 0; t < tries; t++) {
+    used = 0;
+    count = 0;
     do {
-      x = rand() % 9;
-      y = rand() % 9;
-    } while (sudoku->board[y][x].value == 0);
-
-    int bool = 0;
-    if (sudoku->board[y][x].value) {
-      temp[0] = sudoku->board[y][x].value;
-      resetCell(sudoku, y, x);
-      setBitValue(&bool, 0, 1);
-      i++;
+      x[0] = rand() % board_size;
+      y[0] = rand() % board_size;
+    } while (sudoku->board[y[0]][x[0]].value == 0);
+    x[1] = y[0];
+    y[1] = x[0];
+    x[2] = board_size - 1 - x[0];
+    y[2] = board_size - 1 - y[0];
+    x[3] = y[2];
+    y[3] = x[2];
+    for (int i = 0; i < 4; i++) {
+      if (i == 0 || (i < n && sudoku->board[y[i]][x[i]].value && rand() % 3 == 0)) {
+        temp[i] = sudoku->board[y[i]][x[i]].value;
+        resetCell(sudoku, size, y[i], x[i]);
+        setBitValue(&used, i, 1);
+        count++;
+      }
     }
-    if (i < n && sudoku->board[x][y].value && rand() % 4 == 0) {
-      temp[1] = sudoku->board[x][y].value;
-      resetCell(sudoku, x, y);
-      setBitValue(&bool, 1, 1);
-      i++;
-    }
-    if (i < n && sudoku->board[8 - y][8 - x].value && rand() % 4 == 0) {
-      temp[2] = sudoku->board[8 - y][8 - x].value;
-      resetCell(sudoku, 8 - y, 8 - x);
-      setBitValue(&bool, 2, 1);
-      i++;
-    }
-    if (i < n && sudoku->board[8 - x][8 - y].value && rand() % 4 == 0) {
-      temp[3] = sudoku->board[8 - x][8 - y].value;
-      resetCell(sudoku, 8 - x, 8 - y);
-      setBitValue(&bool, 3, 1);
-      i++;
-    }
-
-    if (countSolutions(sudoku, i) != one) {
-      if (getBitValue(bool, 0)) assignCell(sudoku, temp[0], y, x);
-      if (getBitValue(bool, 1)) assignCell(sudoku, temp[1], x, y);
-      if (getBitValue(bool, 2)) assignCell(sudoku, temp[2], 8 - y, 8 - x);
-      if (getBitValue(bool, 3)) assignCell(sudoku, temp[3], 8 - x, 8 - y);
-      i -= countBits(bool);
+    if ((countSolutions(sudoku, size, nempty + count) == one) &&
+        resetSafeRandomCellsWithReverts(sudoku, size, nempty + count, n - count, tries)) {
+      return 1;
+    } else {
+      for (int i = 0; i < 4; i++) {
+        if (getBitValue(used, i)) {
+          assignCell(sudoku, size, temp[i], y[i], x[i]);
+        }
+      }
     }
   }
+  return 0;
 }
 
-enum solutions_number countSolutions(sudoku_game *sudoku, int nempty) {
-  if (nempty < 2) return one;
+enum solutions_number countSolutions(sudoku_game *sudoku, int size, int nempty) {
+  if (nempty <= 1) return one;
   int nfound = 0;
-  return countSolutions2(sudoku, nempty, &nfound);
+  return countSolutions2(sudoku, size, nempty, &nfound);
 }
 
-enum solutions_number countSolutions2(sudoku_game *sudoku, int nempty, int *nfound) {
+enum solutions_number countSolutions2(sudoku_game *sudoku, int size, int nempty, int *nfound) {
   if (nempty == 0) {
     *nfound += 1;
     return *nfound > 1 ? multiple : one;
@@ -203,23 +226,24 @@ enum solutions_number countSolutions2(sudoku_game *sudoku, int nempty, int *nfou
     return multiple;
   }
 
+  int board_size = size * size;
   int y = 0, x = 0, z;
 
   while (sudoku->board[y][x].value) {
     x++;
-    if (x >= 9) {
+    if (x >= board_size) {
       y++;
       x = 0;
     }
   }
 
-  int cell_allowed = allowedCellValues(sudoku, y, x);
+  int cell_allowed = allowedCellValues(sudoku, size, y, x);
 
-  for (z = 0; z < 9; z++) {
+  for (z = 0; z < board_size; z++) {
     if (getBitValue(cell_allowed, z)) {
-      assignCell(sudoku, z + 1, y, x);
-      countSolutions2(sudoku, nempty - 1, nfound);
-      resetCell(sudoku, y, x);
+      assignCell(sudoku, size, z + 1, y, x);
+      countSolutions2(sudoku, size, nempty - 1, nfound);
+      resetCell(sudoku, size, y, x);
       if (*nfound > 1) {
         return multiple;
       }
@@ -228,15 +252,16 @@ enum solutions_number countSolutions2(sudoku_game *sudoku, int nempty, int *nfou
   return *nfound > 0 ? one : none;
 }
 
-void printBoard(sudoku_game *sudoku) {
+void printBoard(sudoku_game *sudoku, int size) {
+  int board_size = size * size;
   int y, x;
-  for (y = 0; y < 9; y++) {
-    if (y % 3 == 0) printf("\n");
-    for (x = 0; x < 9; x++) {
-      if (x == 8) {
+  for (y = 0; y < board_size; y++) {
+    if (y % size == 0) printf("\n");
+    for (x = 0; x < board_size; x++) {
+      if (x == board_size - 1) {
         printf(" %d\n", sudoku->board[y][x].value);
       } else {
-        if (x % 3 == 0) {
+        if (x % size == 0) {
           printf("  %d ", sudoku->board[y][x].value);
         } else {
           printf(" %d ", sudoku->board[y][x].value);
@@ -247,7 +272,7 @@ void printBoard(sudoku_game *sudoku) {
   printf("\n\n");
 }
 
-void resetCell(sudoku_game *sudoku, int y, int x) {
+void resetCell(sudoku_game *sudoku, int size, int y, int x) {
   int temp = sudoku->board[y][x].value;
   sudoku->board[y][x].value = 0;
 
@@ -256,8 +281,9 @@ void resetCell(sudoku_game *sudoku, int y, int x) {
   setBitValue(sudoku->board[y][x].square, temp - 1, 1);
 }
 
-void resetRow(sudoku_game *sudoku, int r) {
-  for (int i = 0; i < 9; i++) {
-    resetCell(sudoku, r, i);
+void resetRow(sudoku_game *sudoku, int size, int r) {
+  int board_size = size * size;
+  for (int i = 0; i < board_size; i++) {
+    resetCell(sudoku, size, r, i);
   }
 }

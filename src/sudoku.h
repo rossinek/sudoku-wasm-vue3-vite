@@ -9,13 +9,13 @@ typedef struct sudoku_cell {
 } sudoku_cell;
 
 typedef struct allowed_values {
-  int rows[9];
-  int columns[9];
-  int squares[9];
+  int *rows;
+  int *columns;
+  int *squares;
 } allowed_values;
 
 typedef struct sudoku_game {
-  sudoku_cell board[9][9];
+  sudoku_cell **board;
   allowed_values lookup;
 } sudoku_game;
 
@@ -25,23 +25,24 @@ enum solutions_number {
   multiple = 2,
 };
 
-sudoku_game *createGame();
-sudoku_game *createSolvedGame();
-int isBoardComplete(uint8_t board[9 * 9]);
-int isBoardValid(uint8_t board[9 * 9]);
-int allowedCellValues(sudoku_game *sudoku, int y, int x);
-void assignRandomFirstRow(sudoku_game *sudoku);
-void assignRandomAllowedRow(sudoku_game *sudoku, int r);
-void assignCell(sudoku_game *sudoku, int value, int y, int x);
+sudoku_game *createGame(int size);
+void cleanup(sudoku_game *sudoku, int size);
+sudoku_game *createSolvedGame(int size);
+int isBoardComplete(uint8_t *board, int size);
+int isBoardValid(uint8_t *board, int size);
+int allowedCellValues(sudoku_game *sudoku, int size, int y, int x);
+void assignRandomFirstRow(sudoku_game *sudoku, int size);
+int assignRandomAllowedRowWithReverts(sudoku_game *sudoku, int size, int r, int tries);
+void assignCell(sudoku_game *sudoku, int size, int value, int y, int x);
 void shuffle(int array[], int n);
-void resetSafeRandomCells(sudoku_game *sudoku, int n);
-void resetCell(sudoku_game *sudoku, int y, int x);
-void resetRow(sudoku_game *sudoku, int r);
-int leastPossibleValues(sudoku_game *sudoku, int y, int *x);
+int resetSafeRandomCellsWithReverts(sudoku_game *sudoku, int size, int nempty, int n, int tries);
+void resetCell(sudoku_game *sudoku, int size, int y, int x);
+void resetRow(sudoku_game *sudoku, int size, int r);
+int leastPossibleValues(sudoku_game *sudoku, int size, int y, int *x);
 
-enum solutions_number countSolutions(sudoku_game *sudoku, int nempty);
-enum solutions_number countSolutions2(sudoku_game *sudoku, int nempty, int *nfound);
+enum solutions_number countSolutions(sudoku_game *sudoku, int size, int nempty);
+enum solutions_number countSolutions2(sudoku_game *sudoku, int size, int nempty, int *nfound);
 
-void printBoard(sudoku_game *sudoku);
+void printBoard(sudoku_game *sudoku, int size);
 
 #endif
