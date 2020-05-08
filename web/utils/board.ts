@@ -1,5 +1,6 @@
 declare global {
   interface Window {
+    __CORE_READY__: Promise<void>;
     __DEV__: boolean;
   }
 }
@@ -10,13 +11,14 @@ export enum BoardValidationResult {
   VALID_COMPLETE = 1,
 }
 
-let coreReadyResolve
-export const ensureCoreReady = new Promise(resolve => { coreReadyResolve = resolve})
+export const ensureCoreReady = () => window.__CORE_READY__
 
 export const initializeCore = () => {
+  let resolveInitialization: () => void
+  window.__CORE_READY__ = new Promise(resolve => resolveInitialization = resolve)
   const basePath = process.env.NODE_ENV === 'production' ? '/sudoku-wasm-vue3-vite' : ''
   window.Module = {
-    onRuntimeInitialized: () => coreReadyResolve(),
+    onRuntimeInitialized: () => { resolveInitialization() },
     locateFile: url => `${basePath}/src-compiled/${url}`,
   } as any
   const script = document.createElement('script')

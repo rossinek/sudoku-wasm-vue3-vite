@@ -42,10 +42,10 @@ export default defineComponent({
     },
     level: {
       type: Number,
-      default: 3 // current sudoku core support only 3 but web is ready for more
+      default: 10
     }
   },
-  async setup(props, context) {
+  setup(props, context) {
     const gridStyle = computed(() => ({
       gridTemplateColumns: `repeat(${props.size}, 1fr)`
     }))
@@ -53,7 +53,7 @@ export default defineComponent({
     const {
       boardValidation,
       CellContextProvider,
-    } = await useBoard(toRef(props, 'size'), toRef(props, 'level'))
+    } = useBoard(toRef(props, 'size'), toRef(props, 'level'))
 
     watch(() => boardValidation.value, (val: BoardValidationResult) => {
       if (val === BoardValidationResult.VALID_COMPLETE) {

@@ -1,10 +1,8 @@
 import { ref, Ref, reactive, defineComponent, markRaw, watch, computed } from 'vue'
 import { KeyCode } from '../utils/keyboard'
-import { generateBoard, validateBoard, BoardValidationResult, ensureCoreReady } from '../utils/board'
+import { generateBoard, validateBoard, BoardValidationResult } from '../utils/board'
 
-export default async (size: Ref<number>, level: Ref<number> = ref(0)) => {
-  await ensureCoreReady
-
+export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
   const refs = reactive<Array<Ref<HTMLInputElement>>>([])
   const model = reactive<string[]>([])
   const boardData = reactive<number[]>([])

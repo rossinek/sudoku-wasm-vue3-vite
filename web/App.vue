@@ -13,19 +13,15 @@
       </div>
     </template>
 
-    <template v-if="route === 'game'">
-      <Suspense>
-        <template #default>
-          <div class="board-wrapper">
-            <sudoku-board :level="level" @solved="onSolved" />
-            <div class="hint">Tip: You can use keyboard for navigation.</div>
-            <h2 :class="['win-info', !isGameSolved && 'win-info--hidden']">You win! 🎉</h2>
-          </div>
-          <div class="button-wrapper">
-            <a-button @click="routerPush('')">restart</a-button>
-          </div>
-        </template>
-      </Suspense>
+    <template v-if="route === 'game' && coreReady">
+      <div class="board-wrapper">
+        <sudoku-board :level="level" @solved="onSolved" />
+        <div class="hint">Tip: You can use keyboard for navigation.</div>
+        <h2 :class="['win-info', !isGameSolved && 'win-info--hidden']">You win! 🎉</h2>
+      </div>
+      <div class="button-wrapper">
+        <a-button @click="restart">restart</a-button>
+      </div>
     </template>
   </a-container>
 </template>
@@ -37,6 +33,7 @@ import AButton from './components/AButton.vue'
 import AContainer from './components/AContainer.vue'
 import ASlider from './components/ASlider.vue'
 import SudokuBoard from './components/SudokuBoard.vue'
+import { ensureCoreReady } from './utils/board'
 
 export default defineComponent({
   components: {
@@ -48,15 +45,23 @@ export default defineComponent({
   setup () {
     const { route, routerPush } = useLocalRouter(['', 'game'])
     const level = ref(10)
+    const coreReady = ref(false)
+    ensureCoreReady().then(() => { coreReady.value = true })
     const isGameSolved = ref(false)
-    const onSolved = () => isGameSolved.value = true
+    const onSolved = () => { isGameSolved.value = true }
+    const restart = () => {
+      isGameSolved.value = false
+      routerPush('')
+    }
 
     return {
       level,
+      coreReady,
       isGameSolved,
       onSolved,
       route,
       routerPush,
+      restart,
     }
   }
 })
