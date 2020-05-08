@@ -21,7 +21,8 @@ export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
     refs.fill('' as any).forEach((_, i) => refs[i] = ref())
     // focus first input once after mounted
     const unwatch = watch(() => refs[0].value, () => {
-      refs[0].value.select()
+      const index = refs.findIndex(r => !r.value.readOnly)
+      refs[index] && refs[index].value.select()
       unwatch()
     })
   }, { immediate: true })
@@ -47,7 +48,6 @@ export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
     value: model[index],
     readonly: isCellReadonly(index),
   })
-
 
   const inputListeners = (index) => ({
     keydown: (ev: KeyboardEvent) => {
