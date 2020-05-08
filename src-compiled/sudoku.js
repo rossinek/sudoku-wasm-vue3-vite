@@ -2193,6 +2193,13 @@ var _generateBoard = Module["_generateBoard"] = function() {
 };
 
 /** @type {function(...*):?} */
+var _validateBoard = Module["_validateBoard"] = function() {
+  assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
+  assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');
+  return Module["asm"]["validateBoard"].apply(null, arguments)
+};
+
+/** @type {function(...*):?} */
 var ___errno_location = Module["___errno_location"] = function() {
   assert(runtimeInitialized, 'you need to wait for the runtime to be ready (e.g. wait for main() to be called)');
   assert(!runtimeExited, 'the runtime was exited (use NO_EXIT_RUNTIME to keep it alive after main() exits)');

@@ -27,6 +27,9 @@ enum solutions_number {
 
 sudoku_game *createGame();
 sudoku_game *createSolvedGame();
+int isBoardComplete(uint8_t board[9 * 9]);
+int isBoardValid(uint8_t board[9 * 9]);
+int allowedCellValues(sudoku_game *sudoku, int y, int x);
 void assignRandomFirstRow(sudoku_game *sudoku);
 void assignRandomAllowedRow(sudoku_game *sudoku, int r);
 void assignCell(sudoku_game *sudoku, int value, int y, int x);

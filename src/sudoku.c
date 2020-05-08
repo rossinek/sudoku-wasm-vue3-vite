@@ -35,6 +35,41 @@ sudoku_game *createSolvedGame() {
   return sudoku;
 }
 
+int isBoardComplete(uint8_t board[9 * 9]) {
+  for (int i = 0; i < 9 * 9; i++) {
+    if (board[i] == 0) return 0;
+  }
+  return 1;
+}
+
+int isBoardValid(uint8_t board[9 * 9]) {
+  sudoku_game *sudoku = createGame();
+  for (int y = 0; y < 9; y++) {
+    for (int x = 0; x < 9; x++) {
+      int index = y * 9 + x;
+      if (board[index]) {
+        if (board[index] <= 0 && board[index] > 9) {
+          free(sudoku);
+          return 0;
+        }
+        int cell_allowed = allowedCellValues(sudoku, y, x);
+        if (getBitValue(cell_allowed, board[index] - 1)) {
+          assignCell(sudoku, board[index], y, x);
+        } else {
+          free(sudoku);
+          return 0;
+        }
+      }
+    }
+  }
+  free(sudoku);
+  return 1;
+}
+
+int allowedCellValues(sudoku_game *sudoku, int y, int x) {
+  return (*sudoku->board[y][x].row) & (*sudoku->board[y][x].column) & (*sudoku->board[y][x].square);
+}
+
 void assignRandomFirstRow(sudoku_game *sudoku) {
   int array[9];
   for (int i = 0; i < 9; i++) {
@@ -68,8 +103,7 @@ void assignRandomAllowedRow(sudoku_game *sudoku, int y) {
     }
     j = rand() % 9;
 
-    int cell_allowed =
-        (*sudoku->board[y][x].row) & (*sudoku->board[y][x].column) & (*sudoku->board[y][x].square);
+    int cell_allowed = allowedCellValues(sudoku, y, x);
 
     i = j;
     while (getBitValue(cell_allowed, i) != 1) {
@@ -179,8 +213,7 @@ enum solutions_number countSolutions2(sudoku_game *sudoku, int nempty, int *nfou
     }
   }
 
-  int cell_allowed =
-      *sudoku->board[y][x].row & *sudoku->board[y][x].column & *sudoku->board[y][x].square;
+  int cell_allowed = allowedCellValues(sudoku, y, x);
 
   for (z = 0; z < 9; z++) {
     if (getBitValue(cell_allowed, z)) {
