@@ -73,6 +73,18 @@ export default defineComponent({
 
 <style scoped>
 .sudoku-board {
+  --grid-padding: 10px;
+  --column-gap: 5px;
+  --cell-font-size: 20px;
+}
+@media (max-width: 480px), (max-height: 480px) {
+  .sudoku-board {
+    --grid-padding: 5px;
+    --column-gap: 2px;
+    --cell-font-size: 15px;
+  }
+}
+.sudoku-board {
   width: 100%;
   max-width: 70vh;
 }
@@ -83,15 +95,15 @@ export default defineComponent({
   grid-auto-rows: 1fr;
 }
 .grid--big {
-  padding: 10px;
+  padding: var(--grid-padding);
   margin: 0 auto;
-  border-radius: 10px;
+  border-radius: var(--grid-padding);
   background-color: var(--border-color);
 }
 .grid--small {
-  padding: 10px;
-  column-gap: 5px;
-  row-gap: 5px;
+  padding: var(--grid-padding);
+  column-gap: var(--column-gap);
+  row-gap: var(--column-gap);
 }
 .cell {
   width: 100%;
@@ -99,8 +111,9 @@ export default defineComponent({
   background-color: var(--background);
   border-radius: 5px;
   border: 0;
+  padding: 0;
   text-align: center;
-  font-size: 20px;
+  font-size: var(--cell-font-size);
   color: var(--color-primary--dark);
 }
 .cell:focus {
@@ -114,13 +127,5 @@ export default defineComponent({
   background-color: var(--background--readonly);
   color: var(--color-text);
   font-weight: bold;
-}
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type=number] {
-  -moz-appearance: textfield;
 }
 </style>
