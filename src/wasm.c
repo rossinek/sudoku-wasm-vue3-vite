@@ -14,8 +14,8 @@ enum board_validation_result {
 extern uint8_t *generateBoard(int size, int level) {
   int board_size = size * size;
 
-  int min_to_remove = board_size * size;
-  int max_to_remove = (int)(board_size * size * 2);
+  int min_to_remove = board_size * (size > 2 ? size : 1);
+  int max_to_remove = min_to_remove * 2;
   if (level < 0 || level > 10) {
     return NULL;
   }
