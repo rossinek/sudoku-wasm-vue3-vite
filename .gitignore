@@ -5,3 +5,4 @@ archive/
 node_modules
 dist
 sudoku-wasm-vue3-vite
+legacy
