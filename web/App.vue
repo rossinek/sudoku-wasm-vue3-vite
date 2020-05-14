@@ -140,6 +140,7 @@ export default defineComponent({
   opacity: 0;
   width: 0;
   height: 0;
+  visibility: hidden;
 }
 .board-option {
   margin-top: 20px;

@@ -119,6 +119,8 @@ export default defineComponent({
   row-gap: var(--column-gap);
 }
 .cell {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
   height: 100%;
   background-color: var(--background);
@@ -143,5 +145,6 @@ export default defineComponent({
 }
 .cell[data-error] {
   box-shadow: 0 0 0px 2px var(--color-error);
+  color: var(--color-error);
 }
 </style>
