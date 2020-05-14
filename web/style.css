@@ -5,6 +5,8 @@
   --color-primary: #68f;
   --color-primary--dark: #45d;
   --color-text: #333;
+  --color-text--light: #999;
+  --color-error: #f37;
 }
 
 html {

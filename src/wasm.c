@@ -36,8 +36,8 @@ extern uint8_t *generateBoard(int size, int level) {
   return arrayPtr;
 }
 
-extern int validateBoard(int size, uint8_t *board) {
-  if (isBoardValid(board, size)) {
+extern enum board_validation_result validateBoard(uint8_t *board, int size, uint8_t *validationResults) {
+  if (isBoardValid(board, size, validationResults)) {
     if (isBoardComplete(board, size)) {
       return valid_complete;
     }

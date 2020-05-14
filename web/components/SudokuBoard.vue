@@ -43,7 +43,11 @@ export default defineComponent({
     level: {
       type: Number,
       default: 5,
-    }
+    },
+    showConflicts: {
+      type: Boolean,
+      default: false,
+    },
   },
   setup(props, context) {
     const gridStyle = computed(() => ({
@@ -53,9 +57,9 @@ export default defineComponent({
     const {
       boardValidation,
       CellContextProvider,
-    } = useBoard(toRef(props, 'size'), toRef(props, 'level'))
+    } = useBoard(toRef(props, 'size'), toRef(props, 'level'), toRef(props, 'showConflicts'))
 
-    watch(() => boardValidation.value, (val: BoardValidationResult) => {
+    watch(() => boardValidation.value.status, (val: BoardValidationResult) => {
       if (val === BoardValidationResult.VALID_COMPLETE) {
         context.emit('solved')
       }
@@ -126,7 +130,7 @@ export default defineComponent({
   color: var(--color-primary--dark);
 }
 .cell:focus {
-  box-shadow: 0 0 0px 2px var(--color-primary);
+  box-shadow: 0 0 0px 2px var(--color-primary) !important;
   outline: 0;
 }
 .cell::selection {
@@ -136,5 +140,8 @@ export default defineComponent({
   background-color: var(--background--readonly);
   color: var(--color-text);
   font-weight: bold;
+}
+.cell[data-error] {
+  box-shadow: 0 0 0px 2px var(--color-error);
 }
 </style>

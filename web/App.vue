@@ -1,6 +1,6 @@
 <template>
   <a-container class="a-container">
-    <h1 class="title">WASM Sudoku Generator</h1>
+    <h1>WASM Sudoku Generator</h1>
 
     <template v-if="route === ''">
       <div class="option">
@@ -20,8 +20,14 @@
 
     <template v-if="route === 'game' && coreReady">
       <div class="board-wrapper">
-        <sudoku-board :size="+size" :level="+level" @solved="onSolved" />
-        <div class="hint">Tip: You can use keyboard for navigation.</div>
+        <sudoku-board
+          :size="+size"
+          :level="+level"
+          :showConflicts="showConflicts"
+          @solved="onSolved"
+        />
+        <div class="board-option">Tip: You can use keyboard for navigation.</div>
+        <div class="board-option"><a-toggle v-model="showConflicts">highlight conflicts</a-toggle></div>
         <h2 :class="['win-info', !isGameSolved && 'win-info--hidden']">You win! 🎉</h2>
       </div>
       <div class="button-wrapper">
@@ -37,6 +43,7 @@ import useLocalRouter from './composable/useLocalRouter'
 import AButton from './components/AButton.vue'
 import AContainer from './components/AContainer.vue'
 import ASlider from './components/ASlider.vue'
+import AToggle from './components/AToggle.vue'
 import SudokuBoard from './components/SudokuBoard.vue'
 import { ensureCoreReady } from './utils/board'
 
@@ -45,12 +52,14 @@ export default defineComponent({
     AButton,
     AContainer,
     ASlider,
+    AToggle,
     SudokuBoard,
   },
   setup () {
     const { route, routerPush } = useLocalRouter(['', 'game'])
-    const level = ref(5)
     const size = ref(3)
+    const level = ref(5)
+    const showConflicts = ref(false)
     const coreReady = ref(false)
     ensureCoreReady().then(() => { coreReady.value = true })
     const isGameSolved = ref(false)
@@ -63,6 +72,7 @@ export default defineComponent({
     return {
       size,
       level,
+      showConflicts,
       coreReady,
       isGameSolved,
       onSolved,
@@ -77,9 +87,6 @@ export default defineComponent({
 <style scoped>
 .a-container {
   overflow: hidden;
-}
-.title {
-  margin-bottom: 40px;
 }
 .option {
   display: flex;
@@ -104,7 +111,7 @@ export default defineComponent({
   }
 }
 .button-wrapper {
-  margin-top: 50px;
+  margin-top: 40px;
 }
 .board-wrapper {
   position: relative;
@@ -134,8 +141,8 @@ export default defineComponent({
   width: 0;
   height: 0;
 }
-.hint {
+.board-option {
   margin-top: 20px;
-  opacity: 0.5;
+  color: var(--color-text--light);
 }
 </style>

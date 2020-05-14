@@ -35,27 +35,37 @@ export const generateBoard = (size: number, level: number) => {
   return boardData
 }
 
-export const validateBoard = (size: number, boardData: number[]) => {
-  let buffer: number
+export const validateBoard = (size: number, boardData: number[]): { status: BoardValidationResult, cells: boolean[] } => {
+  let bufferPointer: number
+  let validationResultsPointer: number
   let error: any
-  let result: BoardValidationResult
+  let status: BoardValidationResult
+  let validationResults: boolean[] = []
   const dataLength = size**4
   try {
     const typedBoardData = new Uint8Array(dataLength)
     for (let i = 0; i < dataLength; i++) {
       typedBoardData[i] = boardData[i]
     }
-    buffer = Module._malloc(dataLength * typedBoardData.BYTES_PER_ELEMENT)
-    Module.HEAPU8.set(typedBoardData, buffer)
-    result = ccall('validateBoard', 'number', ['number', 'number'], [size, buffer])
+    bufferPointer = Module._malloc(dataLength * typedBoardData.BYTES_PER_ELEMENT)
+    validationResultsPointer = Module._malloc(dataLength * Uint8Array.BYTES_PER_ELEMENT)
+    Module.HEAPU8.set(typedBoardData, bufferPointer)
+    status = ccall('validateBoard', 'number', ['number', 'number', 'number'], [bufferPointer, size, validationResultsPointer])
+    for (let i = 0; i < size**4; i++) {
+      validationResults.push(Boolean(Module.HEAPU8[validationResultsPointer / Uint8Array.BYTES_PER_ELEMENT + i]))
+    }
   } catch (e) {
     error = e
     console.error(e)
   } finally {
-    Module._free(buffer)
+    Module._free(bufferPointer)
+    Module._free(validationResultsPointer)
   }
   if (error) {
     throw error
   }
-  return result
+  return {
+    status,
+    cells: validationResults,
+  }
 }

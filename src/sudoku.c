@@ -55,35 +55,48 @@ sudoku_game *createSolvedGame(int size) {
 }
 
 int isBoardComplete(uint8_t *board, int size) {
-  int n = size * size * size * size;
+  const int n = size * size * size * size;
   for (int i = 0; i < n; i++) {
     if (board[i] == 0) return 0;
   }
   return 1;
 }
 
-int isBoardValid(uint8_t *board, int size) {
-  int board_size = size * size;
-  sudoku_game *sudoku = createGame(size);
-  for (int y = 0; y < board_size; y++) {
-    for (int x = 0; x < board_size; x++) {
-      int index = y * board_size + x;
-      if (board[index]) {
-        if (board[index] <= 0 && board[index] > board_size) {
-          cleanup(sudoku, size);
-          return 0;
-        }
-        int cell_allowed = allowedCellValues(sudoku, size, y, x);
-        if (getBitValue(cell_allowed, board[index] - 1)) {
-          assignCell(sudoku, size, board[index], y, x);
-        } else {
-          cleanup(sudoku, size);
-          return 0;
-        }
-      }
+int isBoardValid(uint8_t *board, int size, uint8_t *validationResults) {
+  const int board_size = size * size;
+  int isValid = 1;
+  for (int index = 0; index < board_size * board_size; index++) {
+    validationResults[index] = isCellValid(board, size, index);
+    isValid &= validationResults[index];
+  }
+  return isValid;
+}
+
+int isCellValid(uint8_t *board, int size, int index) {
+  const int value = board[index];
+  if (value == 0) {
+    return 1;
+  }
+  const int board_size = size * size;
+  const int x = index % board_size;
+  const int y = index / board_size;
+  for (int idx = y * board_size; idx < y * board_size + board_size; idx++) {
+    if (idx != index && board[idx] == value) {
+      return 0;
     }
   }
-  cleanup(sudoku, size);
+  for (int idx = x; idx < board_size * board_size; idx += board_size) {
+    if (idx != index && board[idx] == value) {
+      return 0;
+    }
+  }
+  int offset = x - (x % size) + (y - (y % size)) * board_size;
+  for (int i = 0; i < board_size; i++) {
+    int idx = offset + (i % size) + (i / size) * board_size;
+    if (idx != index && board[idx] == value) {
+      return 0;
+    }
+  }
   return 1;
 }
 

@@ -2,12 +2,12 @@ import { ref, Ref, reactive, defineComponent, markRaw, watch, computed } from 'v
 import { KeyCode } from '../utils/keyboard'
 import { generateBoard, validateBoard, BoardValidationResult } from '../utils/board'
 
-export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
+export default (size: Ref<number>, level: Ref<number> = ref(0), showConflicts: Ref<boolean> = ref(false)) => {
   const refs = reactive<Array<Ref<HTMLInputElement>>>([])
   const model = reactive<string[]>([])
   const boardData = reactive<number[]>([])
-  const boardValidation = computed<BoardValidationResult>(() => {
-    if (!model.length) return BoardValidationResult.VALID_INCOMPLETE
+  const boardValidation = computed(() => {
+    if (!model.length) return { status: BoardValidationResult.VALID_INCOMPLETE, cells: [] }
     return validateBoard(size.value, model.map(Number))
   })
 
@@ -49,6 +49,7 @@ export default (size: Ref<number>, level: Ref<number> = ref(0)) => {
     inputmode: 'numeric',
     value: model[index],
     readonly: isCellReadonly(index),
+    'data-error': (!showConflicts.value || boardValidation.value.cells[index]) ? undefined : true
   })
 
   const inputListeners = (index) => ({
