@@ -1,6 +1,6 @@
 <template>
-  <label class="a-toggle">
-    <input v-model="internalModel" type="checkbox" v-bind="$attrs">
+  <label :class="['a-toggle', $attrs.class]">
+    <input v-model="internalModel" type="checkbox" v-bind="inputAttrs">
     <div class="a-toggle__inner" />
     <div v-if="$slots.default" class="a-toggle__label">
       <slot />
@@ -13,14 +13,13 @@ import { defineComponent, ref, watch, computed } from 'vue'
 
 export default defineComponent({
   inheritAttrs: false,
-  props: {
-    label: {
-      type: Function,
-    }
-  },
   setup (props, context) {
     const internalModel = ref((context.attrs.modelValue as boolean) || false)
-    return { internalModel }
+    const inputAttrs = computed(() => {
+      const { class: className, ...attrs } = context.attrs
+      return attrs
+    })
+    return { internalModel, inputAttrs }
   }
 })
 </script>
@@ -54,14 +53,11 @@ export default defineComponent({
   width: 20px;
   left: 4px;
   bottom: 4px;
-  background-color: var(--background);
+  background-color: var(--color-light);
   transition: 0.3s;
 }
 input:checked + .a-toggle__inner {
   background-color: var(--color-primary--dark);
-}
-input:focus + .a-toggle__inner {
-  box-shadow: 0 0 1px var(--color-primary--dark);
 }
 input:checked + .a-toggle__inner::before {
   transform: translateX(22px);

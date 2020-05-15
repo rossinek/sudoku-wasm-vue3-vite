@@ -129,7 +129,7 @@ export default defineComponent({
   padding: 0;
   text-align: center;
   font-size: var(--cell-font-size);
-  color: var(--color-primary--dark);
+  color: var(--color-text--primary);
 }
 .cell:focus {
   box-shadow: 0 0 0px 2px var(--color-primary) !important;

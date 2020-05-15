@@ -11,7 +11,7 @@
   border: 0;
   outline: 0;
   background: var(--color-primary--dark);
-  color: var(--background);
+  color: var(--color-light);
   text-transform: uppercase;
   padding: 10px 30px;
   font-size: 1rem;

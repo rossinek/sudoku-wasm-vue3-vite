@@ -1,8 +1,12 @@
 <template>
   <a-container class="a-container">
-    <h1>WASM Sudoku Generator</h1>
+    <header class="header">
+      <h1>WASM Sudoku Generator</h1>
+      <theme-toggle />
+    </header>
 
     <template v-if="route === ''">
+
       <div class="option">
         <h2 class="option__label">Difficulty</h2>
         <a-slider v-model="level" min="0" max="10" />
@@ -45,6 +49,7 @@ import AContainer from './components/AContainer.vue'
 import ASlider from './components/ASlider.vue'
 import AToggle from './components/AToggle.vue'
 import SudokuBoard from './components/SudokuBoard.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 import { ensureCoreReady } from './utils/board'
 
 export default defineComponent({
@@ -54,6 +59,7 @@ export default defineComponent({
     ASlider,
     AToggle,
     SudokuBoard,
+    ThemeToggle,
   },
   setup () {
     const { route, routerPush } = useLocalRouter(['', 'game'])
@@ -87,6 +93,23 @@ export default defineComponent({
 <style scoped>
 .a-container {
   overflow: hidden;
+}
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  margin: 1em 0 2em;
+  color: var(--color-text--light);
+}
+.header > ::v-deep(*) {
+  margin-left: 15px;
+  margin-right: 15px;
+}
+.header h1 {
+  margin-top: 4px;
+  margin-bottom: 0;
+  color: var(--color-text);
 }
 .option {
   display: flex;

@@ -7,7 +7,9 @@
   import { createApp } from 'vue'
   import App from './web/App.vue'
   import { initializeCore } from './web/utils/board'
+  import { initializeTheme } from './web/components/ThemeToggle.vue'
 
+  initializeTheme()
   initializeCore()
   createApp(App).mount('#app')
 </script>
