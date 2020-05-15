@@ -1,7 +1,11 @@
 declare global {
+
+  const __BASE__: string;
+  const __DEV__: boolean;
+
   interface Window {
     __CORE_READY__: Promise<void>;
-    __DEV__: boolean;
+
   }
 }
 
@@ -16,13 +20,12 @@ export const ensureCoreReady = () => window.__CORE_READY__
 export const initializeCore = () => {
   let resolveInitialization: () => void
   window.__CORE_READY__ = new Promise(resolve => resolveInitialization = resolve)
-  const basePath = process.env.NODE_ENV === 'production' ? '/sudoku-wasm-vue3-vite' : ''
   window.Module = {
     onRuntimeInitialized: () => { resolveInitialization() },
-    locateFile: url => `${basePath}/src-compiled/${url}`,
+    locateFile: url => `${__BASE__}src-compiled/${url}`,
   } as any
   const script = document.createElement('script')
-  script.src = `${basePath}/src-compiled/sudoku.js`
+  script.src = `${__BASE__}src-compiled/sudoku.js`
   document.body.appendChild(script)
 }
 

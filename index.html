@@ -1,15 +1,24 @@
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
-<link rel="stylesheet" type="text/css" href="./web/style.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=0">
+  <title>Sudoku Generator</title>
+</head>
 
-<div id="app"></div>
+<body>
+  <div id="app"></div>
 
-<script type="module">
-  import { createApp } from 'vue'
-  import App from './web/App.vue'
-  import { initializeCore } from './web/utils/board'
-  import { initializeTheme } from './web/components/ThemeToggle.vue'
+  <script type="module">
+    import './web/style.css'
+    import { createApp } from 'vue'
+    import App from './web/App.vue'
+    import { initializeCore } from './web/utils/board'
+    import { initializeTheme } from './web/components/ThemeToggle.vue'
 
-  initializeTheme()
-  initializeCore()
-  createApp(App).mount('#app')
-</script>
+    initializeTheme()
+    initializeCore()
+    createApp(App).mount('#app')
+  </script>
+</body>
+</html>
