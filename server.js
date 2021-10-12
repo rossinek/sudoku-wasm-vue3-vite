@@ -3,7 +3,7 @@ const path = require('path')
 
 const app = express()
 
-app.use('/public', express.static(path.join(__dirname, './sudoku-wasm-vue3-vite')))
+app.use('/sudoku-wasm-vue3-vite', express.static(path.join(__dirname, './sudoku-wasm-vue3-vite')))
 app.use(express.urlencoded({ extended: false }))
 app.use(express.json())
 
