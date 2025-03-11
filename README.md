@@ -4,7 +4,8 @@ Legacy C project from school compiled to WebAssembly with [Vue 3](https://github
 
 ## Let's play sudoku (demo)
 
-https://rossinek.github.io/sudoku-wasm-vue3-vite/
+- [simple demo](https://rossinek.github.io/sudoku-wasm-vue3-vite/)
+- [more features (with print option)](https://sudoku.arturrosa.pl)
 
 ## Technologies
 
